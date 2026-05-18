@@ -25,3 +25,16 @@ export async function shortenURL(longUrl, customAlias = "") {
 
   return data
 }
+
+
+// MongoDB se saari URLs ki history lao
+// GET /api/urls
+export async function fetchHistory() {
+  const response = await fetch(`${BASE_URL}/api/urls`)
+
+  if (!response.ok) {
+    throw new Error("Could not load history")
+  }
+
+  return response.json()
+}

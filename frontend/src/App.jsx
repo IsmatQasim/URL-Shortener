@@ -1,17 +1,35 @@
-import { useState } from "react"
-import { shortenURL } from "./services/api"
+import { useState, useEffect } from "react"
+import { shortenURL, fetchHistory } from "./services/api"
 import URLInput from "./components/URLInput"
 import ResultCard from "./components/ResultCard"
 import HistoryList from "./components/HistoryList"
 
 export default function App() {
-  // State — App ki "yaadaasht"
-  const [result, setResult]   = useState(null)   // Latest short URL result
-  const [history, setHistory] = useState([])     // Is session mein banaye gaye sare URLs
+  const [result, setResult] = useState(null)
+  const [history, setHistory] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  const [historyLoading, setHistoryLoading] = useState(true)
 
-  // Jab user "Shorten" button dabaye
+  // useEffect — component pehli baar load ho toh history fetch karo
+  // Yeh localStorage ki JAGAH hai — real data MongoDB se aa raha hai
+
+  useEffect(() => {
+  async function loadHistory() {
+    try {
+      setHistoryLoading(true)
+      const data = await fetchHistory()
+      setHistory(data)
+    } catch (err) {
+      console.error("History load failed:", err)
+    } finally {
+      setHistoryLoading(false)
+    }
+  }
+
+  loadHistory()
+}, []) // [] matlab: sirf ek baar — page load pe
+
   async function handleShorten(longUrl, customAlias) {
     setIsLoading(true)
     setError("")
@@ -19,16 +37,19 @@ export default function App() {
 
     try {
       const data = await shortenURL(longUrl, customAlias)
+      setResult(data)
 
-      setResult(data)                               // Result card dikhao
-      setHistory((prev) => [...prev, data])         // History mein add karo
+      // Naya URL history mein UPAR add karo — DB se dobara fetch ki zarurat nahi
+      setHistory((prev) => [data, ...prev])
 
     } catch (err) {
-      setError(err.message)                         // Error message dikhao
+      setError(err.message)
     } finally {
-      setIsLoading(false)                           // Loading band karo — chahe success ho ya fail
+      setIsLoading(false)
     }
   }
+
+
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-violet-50 to-white flex flex-col items-center px-4 py-16">
@@ -46,25 +67,25 @@ export default function App() {
       {/* Main Card */}
       <div className="w-full max-w-xl bg-white rounded-3xl shadow-xl shadow-violet-100 p-8 space-y-5">
 
-        {/* Input Form */}
         <URLInput onShorten={handleShorten} isLoading={isLoading} />
 
-        {/* Error Message */}
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-600 
+          <div className="bg-red-50 border border-red-200 text-red-600
                           text-sm rounded-xl px-4 py-3">
             ⚠️ {error}
           </div>
         )}
 
-        {/* Result */}
         {result && <ResultCard result={result} />}
 
       </div>
 
-      {/* History */}
+      {/* History — real MongoDB data */}
       <div className="w-full max-w-xl">
-        <HistoryList history={history} />
+        {historyLoading
+          ? <p className="text-center text-gray-400 text-sm mt-8">Loading history...</p>
+          : <HistoryList history={history} />
+        }
       </div>
 
     </main>

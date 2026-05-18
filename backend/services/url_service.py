@@ -89,3 +89,26 @@ async def get_url_stats(short_id: str):
         "created_at": url_doc["created_at"],
         "expires_at": url_doc["expires_at"],
     }
+
+async def get_all_urls():
+    """
+    MongoDB se saari URLs lao — newest pehle
+    Last 20 URLs fetch karta hai
+    """
+    cursor = url_collection.find(
+        {},           # Koi filter nahi — sab lo
+        {"_id": 0}    # MongoDB ka internal _id mat bhejo frontend ko
+    ).sort(
+        "created_at", -1   # -1 = newest pehle
+    ).limit(20)
+
+    urls = await cursor.to_list(length=20)
+
+    # datetime object ko string mein convert karo
+    # JSON mein datetime directly nahi jaata
+    for url in urls:
+        url["created_at"] = url["created_at"].isoformat()
+        if url.get("expires_at"):
+            url["expires_at"] = url["expires_at"].isoformat()
+
+    return urls
