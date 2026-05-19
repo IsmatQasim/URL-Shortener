@@ -13,7 +13,7 @@ app = FastAPI(
 # Bina CORS ke browser block kar deta hai requests
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # React ka address
+    allow_origins=["*"],  
     allow_credentials=True,
     allow_methods=["*"],   # GET, POST, sab allow
     allow_headers=["*"],
