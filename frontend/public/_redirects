@@ -1,2 +1,2 @@
 /api/*  https://ismat18-url-shortener-backend.hf.space/api/:splat  200
-/*      https://ismat18-url-shortener-backend.hf.space/:splat      200
+/:id    https://ismat18-url-shortener-backend.hf.space/api/resolve/:id  200

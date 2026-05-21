@@ -5,19 +5,14 @@ from services.url_service import create_short_url, get_original_url, get_all_url
 
 router = APIRouter()
 
-
-# POST /api/shorten — naya short URL banao
 @router.post("/api/shorten", response_model=URLResponse)
 async def shorten_url(data: URLCreate, request: Request):
     try:
-        # Client ka IP address nikalo
-        # request.client.host → "192.168.1.1" jaisi value
-        client_ip = request.client.host
-
+        client_id = request.headers.get("X-Client-Id") or request.client.host
         result = await create_short_url(
             original_url=str(data.url),
             custom_alias=data.custom_alias,
-            created_by=client_ip        # IP save karo — taake pata chale kiska URL hai
+            created_by=client_id
         )
         return result
     except ValueError as e:
@@ -25,16 +20,12 @@ async def shorten_url(data: URLCreate, request: Request):
     except Exception as e:
         raise HTTPException(status_code=500, detail="Server error. Try again.")
 
-
-# GET /api/urls — sirf US USER ki URLs (IP se identify)
 @router.get("/api/urls")
 async def get_urls(request: Request):
-    client_ip = request.client.host
-    urls = await get_all_urls(client_ip)   # Sirf is IP ki URLs aayengi
+    client_id = request.headers.get("X-Client-Id") or request.client.host
+    urls = await get_all_urls(client_id)
     return urls
 
-
-# GET /api/stats/{short_id} — kisi ek URL ki stats
 @router.get("/api/stats/{short_id}")
 async def url_stats(short_id: str):
     stats = await get_url_stats(short_id)
@@ -42,18 +33,18 @@ async def url_stats(short_id: str):
         raise HTTPException(status_code=404, detail="URL not found.")
     return stats
 
-@router.get("/{short_id}")
-async def redirect_url(short_id: str):
-    original_url = await get_original_url(short_id)
-    if not original_url:
-        raise HTTPException(status_code=404, detail="URL not found or expired.")
-    
-    # Redirect mat karo — sirf URL return karo
-    return {"original_url": original_url}
-
+# ← Naya route — frontend redirect ke liye
 @router.get("/api/resolve/{short_id}")
 async def resolve_url(short_id: str):
     original_url = await get_original_url(short_id)
     if not original_url:
         raise HTTPException(status_code=404, detail="URL not found or expired.")
     return {"original_url": original_url}
+
+# Yeh SABSE NEECHE rehna chahiye
+@router.get("/{short_id}")
+async def redirect_url(short_id: str):
+    original_url = await get_original_url(short_id)
+    if not original_url:
+        raise HTTPException(status_code=404, detail="URL not found or expired.")
+    return RedirectResponse(url=original_url, status_code=307)
