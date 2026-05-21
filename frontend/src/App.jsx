@@ -10,21 +10,19 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const [historyLoading, setHistoryLoading] = useState(true)
+const isRedirecting = window.location.pathname.slice(1) !== ""
 
   useEffect(() => {
-  // Check karo URL mein koi short_id toh nahi
-  const path = window.location.pathname.slice(1) // "/eowkLO" → "eowkLO"
-  
-  if (path && path !== "") {
-    // Backend se original URL lo
+  const path = window.location.pathname.slice(1)
+
+  if (path) {
     fetch(`https://ismat18-url-shortener-backend.hf.space/api/resolve/${path}`)
       .then(res => res.json())
       .then(data => {
         if (data.original_url) {
-          window.location.href = data.original_url  // Redirect karo
+          window.location.href = data.original_url
         }
       })
-      .catch(err => console.error(err))
   }
 }, [])
   
@@ -64,9 +62,21 @@ export default function App() {
   }
 
 
+  if (isRedirecting) {
+    return (
+      <main className="min-h-screen bg-gradient-to-br from-violet-50 to-white flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-2xl mb-2">✂️</p>
+          <p className="text-gray-500 text-sm">Redirecting...</p>
+        </div>
+      </main>
+    )
+  }
 
   return (
+  
     <main className="min-h-screen bg-gradient-to-br from-violet-50 to-white flex flex-col items-center px-4 py-16">
+
 
       {/* Header */}
       <div className="text-center mb-10">
