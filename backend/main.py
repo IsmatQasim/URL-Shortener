@@ -13,7 +13,10 @@ app = FastAPI(
 # Bina CORS ke browser block kar deta hai requests
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  
+    allow_origins=[
+    "http://localhost:5173",
+    "https://iurl.netlify.app",
+],
     allow_credentials=True,
     allow_methods=["*"],   # GET, POST, sab allow
     allow_headers=["*"],
