@@ -11,9 +11,23 @@ export default function App() {
   const [error, setError] = useState("")
   const [historyLoading, setHistoryLoading] = useState(true)
 
-  // useEffect — component pehli baar load ho toh history fetch karo
-  // Yeh localStorage ki JAGAH hai — real data MongoDB se aa raha hai
-
+  useEffect(() => {
+  // Check karo URL mein koi short_id toh nahi
+  const path = window.location.pathname.slice(1) // "/eowkLO" → "eowkLO"
+  
+  if (path && path !== "") {
+    // Backend se original URL lo
+    fetch(`https://ismat18-url-shortener-backend.hf.space/api/resolve/${path}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.original_url) {
+          window.location.href = data.original_url  // Redirect karo
+        }
+      })
+      .catch(err => console.error(err))
+  }
+}, [])
+  
   useEffect(() => {
   async function loadHistory() {
     try {

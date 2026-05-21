@@ -42,13 +42,18 @@ async def url_stats(short_id: str):
         raise HTTPException(status_code=404, detail="URL not found.")
     return stats
 
-
-# GET /{short_id} — redirect karo
-# NOTE: Yeh SABSE NEECHE hona chahiye
-# Warna /api/urls bhi short_id samajh leta hai FastAPI
 @router.get("/{short_id}")
 async def redirect_url(short_id: str):
     original_url = await get_original_url(short_id)
     if not original_url:
         raise HTTPException(status_code=404, detail="URL not found or expired.")
-    return RedirectResponse(url=original_url, status_code=307)
+    
+    # Redirect mat karo — sirf URL return karo
+    return {"original_url": original_url}
+
+@router.get("/api/resolve/{short_id}")
+async def resolve_url(short_id: str):
+    original_url = await get_original_url(short_id)
+    if not original_url:
+        raise HTTPException(status_code=404, detail="URL not found or expired.")
+    return {"original_url": original_url}
