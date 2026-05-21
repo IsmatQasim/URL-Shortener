@@ -1,5 +1,4 @@
-const BASE_URL = "http://localhost:8000"
-
+const BASE_URL = "https://ismat18-url-shortener-backend.hf.space"
 // Long URL ko short karo
 // POST /api/shorten
 export async function shortenURL(longUrl, customAlias = "") {
